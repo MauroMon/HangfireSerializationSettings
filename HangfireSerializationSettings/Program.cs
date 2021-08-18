@@ -12,23 +12,31 @@ namespace HangfireSerializationSettings
     {
         static void Main(string[] args)
         {
-            try { 
-            GlobalConfiguration.Configuration
-                   .UseSerializerSettings(new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore })
-                   .UseActivator(new HangfireJobActivator())                   
-                   .UseColouredConsoleLogProvider()
-                   .LiteDbStorage("hangfire.db");
+            try
+            {
+                JsonSerializerSettings settings = new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore };
 
-            var server = new BackgroundJobServer(new BackgroundJobServerOptions() { WorkerCount = 1, SchedulePollingInterval = TimeSpan.FromMilliseconds(5000) });
+                var classA = new ClassA();
+                var classB = new ClassB();
+                classB.ClassA = classA;
+                classA.ClassB = classB;
 
-            var classA = new ClassA();
-            var classB = new ClassB();
-            classB.ClassA = classA;
-            classA.ClassB = classB;
-            DummyJob dummyJob = new DummyJob();
-            BackgroundJob.Schedule(() => dummyJob.DummyJobExecution(classA), TimeSpan.FromSeconds(1));
+                string test = JsonConvert.SerializeObject(classA, settings);
+
+                Console.WriteLine(test);
+
+                GlobalConfiguration.Configuration
+                       .UseSerializerSettings(settings)
+                       .UseActivator(new HangfireJobActivator())
+                       .UseColouredConsoleLogProvider()
+                       .LiteDbStorage("hangfire.db");
+
+                var server = new BackgroundJobServer(new BackgroundJobServerOptions() { WorkerCount = 1, SchedulePollingInterval = TimeSpan.FromMilliseconds(5000) });
+
+                DummyJob dummyJob = new DummyJob();
+                BackgroundJob.Schedule(() => dummyJob.DummyJobExecution(classA), TimeSpan.FromSeconds(1));
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 Console.WriteLine(ex);
             }
