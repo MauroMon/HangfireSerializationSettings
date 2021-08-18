@@ -15,10 +15,6 @@ namespace HangfireSerializationSettings
             try { 
             GlobalConfiguration.Configuration
                    .UseSerializerSettings(new JsonSerializerSettings() { ReferenceLoopHandling = ReferenceLoopHandling.Ignore })
-                   .UseRecommendedSerializerSettings((settings) =>
-                   {
-                       settings.ReferenceLoopHandling = ReferenceLoopHandling.Ignore;
-                   })
                    .UseActivator(new HangfireJobActivator())                   
                    .UseColouredConsoleLogProvider()
                    .LiteDbStorage("hangfire.db");
